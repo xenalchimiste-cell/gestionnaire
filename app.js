@@ -4,7 +4,7 @@ const API_URL = '/api';
 let currentProjectId = null;
 let currentTaskId = null;
 let pomodoroInterval = null;
-let pomodoroTime = 25 * 60;
+let pomodoroTime = 5;
 let isPomodoroRunning = false;
 let myChart = null;
 
@@ -42,7 +42,6 @@ window.fetch = async function(resource, config) {
 document.addEventListener('DOMContentLoaded', () => {
     setupAuth();
     setupEventListeners();
-    setupTheme();
     setupPomodoro();
     
     if (localStorage.getItem('userId')) {
@@ -130,12 +129,6 @@ function setupEventListeners() {
         taskSection.classList.add('hidden');
         document.getElementById('user-dashboard-section').classList.add('hidden');
         projectSection.classList.remove('hidden');
-    };
-
-    // Thème toggle
-    document.getElementById('btn-theme-toggle').onclick = () => {
-        const isLight = document.body.classList.toggle('light-theme');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
     };
 
     // User Dashboard
@@ -271,12 +264,6 @@ function setupEventListeners() {
         taskDashboard.classList.add('hidden');
         editTask(task.id, task.title, task.status, task.priority, task.description, task.due_date);
     };
-}
-
-function setupTheme() {
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-theme');
-    }
 }
 
 // Projects
@@ -740,7 +727,7 @@ function setupPomodoro() {
     function resetPomodoro() {
         clearInterval(pomodoroInterval);
         isPomodoroRunning = false;
-        pomodoroTime = 25 * 60;
+        pomodoroTime = 5;
         updateDisplay();
         startBtn.classList.remove('hidden');
         pauseBtn.classList.add('hidden');
