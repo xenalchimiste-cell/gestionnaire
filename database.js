@@ -4,7 +4,8 @@ const os = require('os');
 
 // En environnement Vercel, MySQL/PostgreSQL est recommandé. 
 // Pour SQLite, on utilise /tmp qui est le seul dossier inscriptible.
-const isVercel = process.env.VERCEL === '1';
+// Détection plus large de l'environnement Vercel
+const isVercel = process.env.VERCEL || process.env.NOW_REGION;
 const dbPath = isVercel 
     ? path.join(os.tmpdir(), 'database.sqlite')
     : path.resolve(__dirname, 'database.sqlite');
@@ -91,8 +92,6 @@ function initializeTables() {
             FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
         )`);
         
-        // Insérer une ligne par défaut si elle n'existe pas
-        db.run(`INSERT OR IGNORE INTO user_info (id, name) VALUES (1, 'Développeur')`);
     });
 }
 
