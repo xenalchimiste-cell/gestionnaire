@@ -1,7 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const os = require('os');
 
-const dbPath = path.resolve(__dirname, 'database.sqlite');
+// En environnement Vercel, MySQL/PostgreSQL est recommandé. 
+// Pour SQLite, on utilise /tmp qui est le seul dossier inscriptible.
+const isVercel = process.env.VERCEL === '1';
+const dbPath = isVercel 
+    ? path.join(os.tmpdir(), 'database.sqlite')
+    : path.resolve(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
