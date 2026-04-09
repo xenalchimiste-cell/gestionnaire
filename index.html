@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevProject Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="auth-section" class="auth-fullscreen">
+        <div class="modal-content auth-box">
+            <h2 style="font-family:'Bricolage Grotesque'; color:var(--text-1); margin-bottom:0.5rem;">Connexion à DevProject</h2>
+            <p style="color:var(--text-3); font-size:0.85rem; margin-bottom:1.5rem;">Veuillez vous identifier ou créer un compte pour accéder à vos projets.</p>
+            <form id="auth-form">
+                <div class="form-group">
+                    <input type="text" id="auth-username" placeholder="Nom d'utilisateur" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" placeholder="Mot de passe" required autocomplete="current-password">
+                </div>
+                <p id="auth-error" class="admin-error hidden" style="margin-bottom:1rem;"></p>
+                <div class="auth-actions" style="display:flex; gap:0.5rem; justify-content:center;">
+                    <button type="submit" class="btn btn-primary flex-1" onclick="window.authMode='login'">Se connecter</button>
+                    <button type="submit" class="btn btn-secondary flex-1" onclick="window.authMode='register'">S'inscrire</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Wrapper -->
+    <div id="app-wrapper" class="hidden">
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-logo">
+                <h1>DevProject</h1>
+                <p>Gestion de projets & tâches</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar" id="user-avatar-initials">D</div>
+                <span id="user-name-display">Développeur</span>
+                <button id="btn-theme-toggle" class="btn btn-secondary btn-sm" title="Changer de thème">🌓</button>
+                <button id="btn-pomodoro" class="btn btn-secondary btn-sm" style="margin-right: 0.5rem">⏱️ Focus</button>
+                <button id="btn-my-dashboard" class="btn btn-secondary btn-sm" style="margin-right: 0.5rem">📊 Mon Dashboard</button>
+                <button id="btn-logout" class="btn btn-secondary btn-sm">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="container">
+
+        <!-- Dashboard Utilisateur -->
+        <section id="user-dashboard-section" class="hidden">
+            <div class="section-header">
+                <div>
+                    <h2>Mon Vue d'ensemble</h2>
+                    <p class="text-muted pb-2">Statistiques personnelles et activité récente</p>
+                </div>
+                <button id="btn-back-to-projects" class="btn btn-secondary">← Retour aux projets</button>
+            </div>
+            
+            <div class="admin-stats mb-4" id="user-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="user-stat-projects">—</span>
+                    <span class="stat-label">Mes Projets</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="user-stat-tasks">—</span>
+                    <span class="stat-label">Tâches totales</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-yellow" id="user-stat-doing">—</span>
+                    <span class="stat-label">En cours</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-green" id="user-stat-done">—</span>
+                    <span class="stat-label">Terminées</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-red" id="user-stat-high">—</span>
+                    <span class="stat-label">Priorité haute</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-green" id="user-stat-completion">—%</span>
+                    <span class="stat-label">Complétion</span>
+                </div>
+            </div>
+
+            <div class="admin-two-col">
+                <div class="admin-table-section">
+                    <h3>Activité Récente</h3>
+                    <div id="user-recent-list" class="recent-list"></div>
+                </div>
+                <div class="admin-charts-section">
+                    <h3>Statistiques Visuelles</h3>
+                    <div class="chart-container-grid">
+                        <div class="chart-item">
+                            <canvas id="user-status-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vue Projets -->
+        <section id="project-section">
+            <div class="section-header" style="justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap: 1rem;">
+                    <h2>Mes Projets</h2>
+                    <input type="text" id="search-projects" placeholder="Rechercher un projet..." style="padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-subtle); color: var(--text-1); font-size:0.8rem; min-width: 200px;">
+                </div>
+                <button id="btn-add-project" class="btn btn-primary">+ Nouveau projet</button>
+            </div>
+            <div id="projects-empty-state" class="hidden" style="text-align: center; padding: 3rem 1rem; color: var(--text-3);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📂</div>
+                <h3 style="color: var(--text-1); margin-bottom: 0.5rem;">Aucun projet trouvé</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">Commencez par créer un nouveau projet pour organiser vos tâches.</p>
+                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-project').click()">Créer mon premier projet</button>
+            </div>
+            <div id="projects-grid" class="grid"></div>
+        </section>
+
+        <!-- Vue Tâches (Kanban) -->
+        <section id="task-section" class="hidden">
+            <div class="section-header">
+                <div>
+                    <button id="btn-back" class="btn btn-secondary btn-sm">← Retour</button>
+                </div>
+                <h2 id="current-project-title">Projet</h2>
+                <button id="btn-add-task" class="btn btn-primary">+ Ajouter une tâche</button>
+            </div>
+
+            <div class="kanban-board">
+                <div class="kanban-column col-todo" id="todo-column">
+                    <div class="kanban-column-header">
+                        <span class="col-dot"></span>
+                        <h3>À faire</h3>
+                        <span class="task-count" id="count-todo">0</span>
+                    </div>
+                    <div class="task-list" id="todo-list"></div>
+                </div>
+                <div class="kanban-column col-doing" id="doing-column">
+                    <div class="kanban-column-header">
+                        <span class="col-dot"></span>
+                        <h3>En cours</h3>
+                        <span class="task-count" id="count-doing">0</span>
+                    </div>
+                    <div class="task-list" id="doing-list"></div>
+                </div>
+                <div class="kanban-column col-done" id="done-column">
+                    <div class="kanban-column-header">
+                        <span class="col-dot"></span>
+                        <h3>Terminé</h3>
+                        <span class="task-count" id="count-done">0</span>
+                    </div>
+                    <div class="task-list" id="done-list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ──────────── MODALS ──────────── -->
+
+    <!-- Modal Projet -->
+    <div id="project-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-project-title">Nouveau projet</h3>
+            <form id="project-form">
+                <input type="hidden" id="project-id">
+                <div class="form-group">
+                    <label for="p-name">Nom du projet</label>
+                    <input type="text" id="p-name" required placeholder="Ex : Portfolio, API REST...">
+                </div>
+                <div class="form-group">
+                    <label for="p-desc">Description</label>
+                    <textarea id="p-desc" rows="3" placeholder="Objectif du projet..."></textarea>
+                </div>
+                <div class="form-group row-group" style="display:flex; align-items:center; gap:10px;">
+                    <label for="p-color" style="margin-bottom:0;">Couleur du projet</label>
+                    <input type="color" id="p-color" value="#3b82f6" style="cursor:pointer; width:50px; height:30px; border:none; border-radius:4px; padding:0; background:none;">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary btn-close">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tâche -->
+    <div id="task-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-task-title">Nouvelle tâche</h3>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                <input type="hidden" id="task-project-id">
+                <div class="form-group">
+                    <label for="t-title">Titre</label>
+                    <input type="text" id="t-title" required placeholder="Ex : Créer le MCD, Setup Docker...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="t-status">Statut</label>
+                        <select id="t-status">
+                            <option value="A faire">À faire</option>
+                            <option value="En cours">En cours</option>
+                            <option value="Terminé">Terminé</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="t-priority">Priorité</label>
+                        <select id="t-priority">
+                            <option value="Basse">Basse</option>
+                            <option value="Moyenne" selected>Moyenne</option>
+                            <option value="Haute">Haute</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="t-desc">Description</label>
+                    <textarea id="t-desc" rows="2" placeholder="Optionnel, détails..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="t-due-date">Date d'échéance</label>
+                    <input type="date" id="t-due-date">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary btn-close">Annuler</button>
+                    <button type="submit" id="btn-task-submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard de tâche -->
+    <div id="task-dashboard" class="modal hidden">
+        <div class="modal-content dashboard-content">
+            <div class="dashboard-header">
+                <div class="dashboard-header-main">
+                    <h2 id="dash-task-title">Titre</h2>
+                    <div class="dash-badges">
+                        <span id="dash-task-status" class="badge"></span>
+                        <span id="dash-task-priority" class="badge"></span>
+                    </div>
+                </div>
+                <button class="btn-close-dash">×</button>
+            </div>
+            <div class="dashboard-body">
+                <div class="dash-main">
+                    <div class="dash-section">
+                        <h4>Description</h4>
+                        <p id="dash-task-desc">Aucune description fournie.</p>
+                    </div>
+                    <div class="dash-section">
+                        <h4>Notes</h4>
+                        <div id="notes-list" class="notes-list"></div>
+                        <form id="note-form" class="note-form">
+                            <input id="note-input" type="text" placeholder="Ajouter une note…" required>
+                            <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="dash-sidebar">
+                    <div class="dash-section">
+                        <h4>Actions</h4>
+                        <button id="btn-edit-from-dash" class="btn btn-secondary btn-block">Modifier</button>
+                        <button id="btn-delete-from-dash" class="btn btn-danger btn-block">Supprimer</button>
+                    </div>
+                    <div class="dash-info">Créé le : <span id="dash-task-date">—</span></div>
+                    <div class="dash-info" style="border-top:none; margin-top:0">Échéance : <span id="dash-task-due-date">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div> <!-- End App Wrapper -->
+
+    <!-- Modal Pomodoro -->
+    <div id="pomodoro-modal" class="modal hidden">
+        <div class="modal-content pomodoro-content" style="text-align: center;">
+            <h3 id="pomo-title">Mode Focus</h3>
+            <div class="pomo-timer">
+                <span id="pomo-minutes">25</span>:<span id="pomo-seconds">00</span>
+            </div>
+            <div class="pomo-status" id="pomo-status-text">C'est l'heure de bosser !</div>
+            <div class="pomo-actions" style="margin-top: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
+                <button id="pomo-start" class="btn btn-primary">Démarrer</button>
+                <button id="pomo-pause" class="btn btn-secondary hidden">Pause</button>
+                <button id="pomo-reset" class="btn btn-secondary">Reset</button>
+                <button id="pomo-close" class="btn btn-secondary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Admin (overlay complet) -->
+    <div id="admin-panel" class="admin-panel hidden">
+        <div class="admin-topbar">
+            <div class="admin-topbar-left">
+                <span class="admin-badge">ADMIN</span>
+                <h2>Vue d'ensemble</h2>
+            </div>
+            <div class="admin-topbar-actions">
+                <button id="btn-export-csv" class="btn btn-secondary btn-sm">↓ Export CSV</button>
+                <button id="btn-close-admin" class="btn btn-secondary btn-sm">✕ Quitter</button>
+            </div>
+        </div>
+
+        <div class="admin-body">
+            <!-- Statistiques -->
+            <div class="admin-stats" id="admin-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-projects">—</span>
+                    <span class="stat-label">Projets</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-tasks">—</span>
+                    <span class="stat-label">Tâches totales</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-todo">—</span>
+                    <span class="stat-label">À faire</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-yellow" id="stat-doing">—</span>
+                    <span class="stat-label">En cours</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-green" id="stat-done">—</span>
+                    <span class="stat-label">Terminées</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-red" id="stat-high">—</span>
+                    <span class="stat-label">Priorité haute</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value stat-green" id="stat-completion">—%</span>
+                    <span class="stat-label">Completion globale</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-user">—</span>
+                    <span class="stat-label">Utilisateur</span>
+                </div>
+            </div>
+
+            <!-- Tableaux + Activité -->
+            <div class="admin-two-col">
+                <!-- Colonne principale -->
+                <div class="admin-tables">
+                    <div class="admin-table-section">
+                        <h3>Projets</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Créateur</th>
+                                    <th>Avancement</th>
+                                    <th>Total</th>
+                                    <th>✓</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-projects-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="admin-table-section">
+                        <h3>Toutes les tâches</h3>
+                        <div class="table-filter">
+                            <input type="text" id="admin-filter" placeholder="Filtrer les tâches...">
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Tâche</th>
+                                    <th>Créateur</th>
+                                    <th>Statut</th>
+                                    <th>Priorité</th>
+                                    <th>Créé le</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-tasks-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Colonne latérale : activité récente -->
+                <div class="admin-activity">
+                    <h3>Activité récente</h3>
+                    <div id="admin-recent-list" class="recent-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="app.js"></script>
+</body>
+</html>
